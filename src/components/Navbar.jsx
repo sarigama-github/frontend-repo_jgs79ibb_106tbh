@@ -23,7 +23,7 @@ export default function Navbar() {
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <a href="#" className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-rose-300 via-pink-200 to-amber-200 shadow-inner"/>
-          <span className="font-semibold tracking-tight text-gray-800">Lumière Facial Therapy</span>
+          <span className="font-semibold tracking-tight text-gray-800">Maduela Facial Therapy</span>
         </a>
 
         <div className="hidden md:flex items-center gap-8">
