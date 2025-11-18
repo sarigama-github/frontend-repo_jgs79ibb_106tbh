@@ -1,15 +1,47 @@
+import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import Spline from '@splinetool/react-spline'
+import React from 'react'
+
+// Lazily load Spline only on capable devices and after mount
+const LazySpline = React.lazy(() => import('@splinetool/react-spline'))
 
 export default function Hero() {
+  const [mounted, setMounted] = useState(false)
+  const [show3D, setShow3D] = useState(false)
+
+  const prefersReduceMotion = useMemo(() => {
+    if (typeof window === 'undefined') return false
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  }, [])
+
+  useEffect(() => {
+    setMounted(true)
+
+    // Defer heavy 3D load to avoid first paint jank
+    const t = setTimeout(() => {
+      // Only enable on desktop-sized viewports and when user does not prefer reduced motion
+      const isDesktop = window.matchMedia('(min-width: 768px)').matches
+      setShow3D(isDesktop && !prefersReduceMotion)
+    }, 800)
+
+    return () => clearTimeout(t)
+  }, [prefersReduceMotion])
+
   return (
     <section className="relative min-h-[90vh] flex items-center overflow-hidden">
       {/* Soft background gradient */}
       <div className="absolute inset-0 bg-[radial-gradient(1200px_500px_at_80%_0%,rgba(244,114,182,0.25),transparent),radial-gradient(800px_400px_at_20%_10%,rgba(248,180,176,0.25),transparent)]"/>
 
-      {/* 3D Scene (lightweight via Spline embed) */}
-      <div className="absolute right-0 top-0 bottom-0 w-full md:w-1/2 opacity-90 pointer-events-none">
-        <Spline scene="https://prod.spline.design/0V1aH6c7WbKkG6r8/scene.splinecode" />
+      {/* 3D Scene (deferred + desktop only) */}
+      <div className="absolute right-0 top-0 bottom-0 w-1/2 opacity-90 pointer-events-none hidden md:block">
+        {mounted && show3D ? (
+          <React.Suspense fallback={<div className="w-full h-full"/>}>
+            <LazySpline scene="https://prod.spline.design/0V1aH6c7WbKkG6r8/scene.splinecode" />
+          </React.Suspense>
+        ) : (
+          // Lightweight placeholder to keep the visual balance while 3D loads or is disabled
+          <div className="w-full h-full bg-[radial-gradient(circle_at_70%_30%,rgba(254,205,211,0.35),transparent_40%),radial-gradient(circle_at_30%_70%,rgba(191,219,254,0.35),transparent_35%)]"/>
+        )}
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 py-24 grid md:grid-cols-2 gap-12 items-center">
